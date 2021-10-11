@@ -27,7 +27,15 @@ public struct SynchronizeableChatInputState: Codable, Equatable {
         } else {
             self.replyToMessageId = nil
         }
-        self.textSelection = nil
+        
+        let lower = try container.decodeIfPresent(Int32.self, forKey: "s0")
+        let upper = try? container.decodeIfPresent(Int32.self, forKey: "s1")
+
+        if let lower = lower, let upper = upper {
+            self.textSelection = Int(lower) ..< Int(upper)
+        } else {
+            self.textSelection = nil
+        }
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -44,6 +52,13 @@ public struct SynchronizeableChatInputState: Codable, Equatable {
             try container.encodeNil(forKey: "m.p")
             try container.encodeNil(forKey: "m.n")
             try container.encodeNil(forKey: "m.i")
+        }
+        if let textSelection = self.textSelection {
+            try container.encode(Int32(textSelection.lowerBound), forKey: "s0")
+            try container.encode(Int32(textSelection.upperBound), forKey: "s1")
+        } else {
+            try container.encodeNil(forKey: "s0")
+            try container.encodeNil(forKey: "s1")
         }
     }
     
